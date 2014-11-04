@@ -121,14 +121,18 @@
                             deltaCount = 0,
                             jumpCount = 0;
 
+                        var isMoving = false;
+
                         var hamster = new Hamster(element[0]).wheel(function(e, delta, deltaX, deltaY) {
                             e = e.originalEvent || e;
 
                             var normalisedDelta = normaliseDelta(e.detail, deltaY);
 
-                            if (deltaY !== 0) {
+                            if (deltaY !== 0 && !isMoving) {
                                 throttle(function() {
                                     deltaCount += (normalisedDelta * 120);
+
+                                    $log.info('delta changed to '+normalisedDelta);
 
                                     if (Math.abs(0 - deltaCount) >= 1) {
                                         deltaCount = 0;
@@ -210,6 +214,8 @@
                         var moveEndTimeout;
 
                         var moveWrapper = function(transDuration) {
+                            $log.info('start move');
+                            isMoving = true;
                             transDuration = transDuration || 0;
                             var wrapperY = -(currentPane * container[0].clientHeight);
                             wrapper[0].style[Modernizr.prefixed('transform')] = 'translate(0, ' + wrapperY + 'px)';
@@ -219,6 +225,8 @@
 
                             moveEndTimeout = $timeout(function(){
                                 scope.$broadcast('scrollify:transitionEnd', { id: defaults.id, currentPane: currentPane });
+                                isMoving = false;
+                                $log.info('finish move');
                             }, transDuration);
                         };
 
